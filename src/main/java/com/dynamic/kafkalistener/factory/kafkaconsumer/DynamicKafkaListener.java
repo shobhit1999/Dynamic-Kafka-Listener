@@ -1,6 +1,5 @@
 package com.dynamic.kafkalistener.factory.kafkaconsumer;
 
-import com.dynamic.kafkalistener.dto.DynamicKafkaListenerConfiguration;
 import com.dynamic.kafkalistener.enumeration.DynamicKafkaListenerType;
 import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
@@ -9,6 +8,8 @@ import org.apache.kafka.common.header.Headers;
 import org.slf4j.MDC;
 import org.springframework.kafka.listener.AcknowledgingMessageListener;
 import org.springframework.kafka.support.Acknowledgment;
+
+import java.util.UUID;
 
 @Slf4j
 public abstract class DynamicKafkaListener implements AcknowledgingMessageListener<String, Object> {
@@ -21,16 +22,12 @@ public abstract class DynamicKafkaListener implements AcknowledgingMessageListen
      */
     @Override
     public void onMessage(ConsumerRecord<String, Object> data, Acknowledgment acknowledgment) {
+        MDC.put("X-Request-ID", UUID.randomUUID().toString().replace("-", ""));
         try {
-            preProcessRequest(data, acknowledgment);
             consumePayload(String.valueOf(data.value()), data.headers(), acknowledgment);
         } finally {
             MDC.clear();
         }
-    }
-
-    protected void preProcessRequest(ConsumerRecord<String, Object> data, Acknowledgment acknowledgment) {
-        //eat
     }
 
     /**
